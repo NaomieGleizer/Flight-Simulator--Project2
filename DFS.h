@@ -39,9 +39,16 @@ class DFS : public Searcher<T> {
         list<State<T>> successors = searchable->getAllPossibleStates(current);
         // go over each neighbor of node
         for (typename std::list<State<T>>::iterator it = successors.begin(); it != successors.end(); it++) {
+
             if (!isInVector(*it, visited)) {
-                path.push_back(current.getState());
-                return dfs(path, *it, goal, visited, searchable);
+                    path.push_back(current.getState());
+                vector<T> tempPath = dfs(path, *it, goal, visited, searchable);
+                if(!tempPath.empty()){
+                    return tempPath;
+                }
+                else{
+                    path.pop_back();
+                }
             }
         }
         path.clear();

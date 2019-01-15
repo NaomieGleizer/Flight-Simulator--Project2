@@ -6,44 +6,65 @@ MySerialServer::MySerialServer() {
 
 void waitForClientThread(int & sockfd, ClientHandler* c) {
     int clilen, newsockfd;
-    char input[256];
-    char output[256];
-
+    string input = "";
+    char temp[1024];
+    char output[1024];
+    char buffer[256];
     struct sockaddr_in cli_addr;
     int n;
+
 
     /* Now start listening for the clients, here process will
        * go in sleep mode and will wait for the incoming connection
     */
-    while (listen(sockfd, 5) == 0) {
-        clilen = sizeof(cli_addr);
 
-        /* Accept actual connection from the client */
+    listen(sockfd, 5);
+    clilen = sizeof(cli_addr);
+
+    timeval timeout;
+    timeout.tv_sec = 1;
+    timeout.tv_usec = 0;
+    /* Accept actual connection from the client */
+    while (true) {
+
         newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr, (socklen_t*)&clilen);
 
         if (newsockfd < 0) {
-            perror("ERROR on accept");
-            exit(1);
+            if (errno == EWOULDBLOCK) {
+                cout << "timeout!" << endl;
+            } else {
+                perror("ERROR on accept");
+            }
+            return;
         }
 
         /* If connection is established then start communicating */
-        bzero(input,256);
-        n = read( newsockfd,input,255 );
-
-        if (n < 0) {
-            perror("ERROR reading from socket");
-            exit(1);
+        bzero(buffer,256);
+        n = read(newsockfd,buffer,255);
+        // read all lines of matrix until end
+        while (strcmp(buffer, "end") == 0) {
+            if (n < 0) {
+                perror("ERROR reading from socket");
+                exit(1);
+            }
+            input += buffer;
+            // sign for end of line
+            input += "*,";
+            bzero(buffer,256);
+            n = read( newsockfd,buffer,255 );
         }
 
-        //printf("Here is the message: %s\n",buffer);
-
-        c->handleClient(input, output);
+        strcpy(temp, input.c_str());
+        c->handleClient(temp, output);
         n = write(newsockfd,output,255);
         if (n < 0) {
             perror("ERROR writing to socket");
             exit(1);
         }
+        close(newsockfd);
+        setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout, sizeof(timeout));
     }
+
 }
 
 void MySerialServer::open(int port, ClientHandler* c) {
@@ -70,8 +91,7 @@ void MySerialServer::open(int port, ClientHandler* c) {
     }
 
     thread t(waitForClientThread, ref(this->sockfd), c);
-
-
+    t.join();
 }
 
 void MySerialServer::stop() {

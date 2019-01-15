@@ -3,17 +3,18 @@
 
 #include <string>
 using namespace std;
-template <class T> class State {
-T state;
-double cost;
-State<T> cameFrom;
+template <typename T> class State{
+    T state;
+    double cost;
+    State<T>* cameFrom;
 public:
     State(T state, double cost) {
         this->state = state;
         this->cost = cost;
+        cameFrom = NULL;
     }
     bool equals(State<T> s) {
-        return this->state.equals(s.state);
+        return this->state == s.state;
     }
     T getState() {
         return this->state;
@@ -21,9 +22,13 @@ public:
     double getCost() {
         return this->cost;
     }
-    State <T> getCameFrom() {
+    State <T>* getCameFrom() {
         return this->cameFrom;
     }
+    void setCameFrom(State<T>* s){
+        this->cameFrom=s;
+    }
+
 };
 
 #endif

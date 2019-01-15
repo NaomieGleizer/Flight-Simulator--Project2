@@ -1,7 +1,7 @@
 #ifndef PROJECT2_SOLVER_H
 #define PROJECT2_SOLVER_H
 
-template <class S, class P>
+template <typename S, typename P>
 class Solver {
 
 public:

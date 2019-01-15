@@ -7,11 +7,13 @@
 using  namespace std;
 
 template<class T> class PriorityQueue{
+protected:
 deque<State<T>> queue;
 public:
-    virtual void AddToQueue(State<T> s);
+    virtual void AddToQueue(State<T>* s)=0;
 
-    virtual bool isElementInQueue(State<T> s){
+    virtual bool isElementInQueue(State<T>* s){
+
         for (typename deque<State<T>>::iterator it = queue.begin(); it != queue.end(); it++) {
             if(s.equals(*it)){
                 return true;
@@ -20,15 +22,17 @@ public:
         return  false;
     }
 
-    virtual deque<State<T>> getQueue(){
+    virtual deque<State<T>*> getQueue(){
         return this->queue;
     }
 
-    virtual State<T> pop(){
-        return this->queue.pop_front();
+    virtual State<T>* pop(){
+        State<T> top = this->queue.front();
+        this->queue.pop_front();
+        return top;
     }
 
-    virtual void adjustPriority(State<T> s){
+    virtual void adjustPriority(State<T>* s){
 
     }
 };
